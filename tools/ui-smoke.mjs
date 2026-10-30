@@ -485,9 +485,9 @@ async function main() {
 
   await evaluate(`location.hash = '#/more'`);
   await sleep(400);
-  check('theme row fits a 375px screen', await evaluate(`document.documentElement.scrollWidth <= window.innerWidth + 1`));
-  check('all 6 swatches visible on small screen', await evaluate(`(() => {
-    const row = document.querySelector('.theme-row');
+  check('appearance row fits a 375px screen', await evaluate(`document.documentElement.scrollWidth <= window.innerWidth + 1`));
+  check('both appearance options visible', await evaluate(`(() => {
+    const row = document.querySelector('.mode-row');
     return row && row.getBoundingClientRect().right <= window.innerWidth + 1;
   })()`));
 
@@ -497,60 +497,64 @@ async function main() {
     check(route + ' fits a 375px screen', await evaluate(`document.documentElement.scrollWidth <= window.innerWidth + 1`));
   }
 
-  /* -------------------------------------------------------- theme colour */
-  console.log('\n[11] Theme colour');
+  /* --------------------------------------------------------- appearance */
+  console.log('\n[11] Light / dark mode');
   await S('Emulation.setDeviceMetricsOverride', {
     width: 430, height: 932, deviceScaleFactor: 2, mobile: true
   });
-  const themeLoad = events('Page.loadEventFired');
+  const modeLoad = events('Page.loadEventFired');
   await S('Page.reload');
-  await themeLoad;
+  await modeLoad;
   await sleep(500);
   await evaluate(`location.hash = '#/more'`);
   await sleep(400);
-  check('6 theme swatches', (await evaluate(`document.querySelectorAll('.theme-swatch').length`)) === 6);
-  check('purple is active by default', (await evaluate(`document.querySelector('.theme-swatch.active')?.dataset.theme`)) === 'purple');
 
-  await evaluate(`document.querySelector('.theme-swatch[data-theme="blue"]').click()`);
-  await sleep(350);
-  check('blue theme applied', (await evaluate(`document.documentElement.dataset.theme`)) === 'blue');
-  check('accent variable follows the theme', (await evaluate(
-    `getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()`
-  )) === '#3b82f6');
-  check('blue swatch marked active', (await evaluate(`document.querySelector('.theme-swatch.active')?.dataset.theme`)) === 'blue');
-  await screenshot('09-theme-more');
+  check('two appearance options', (await evaluate(`document.querySelectorAll('.mode-option').length`)) === 2);
+  check('dark is the default', (await evaluate(`document.documentElement.dataset.mode`)) === 'dark');
+  check('dark option marked active', (await evaluate(`document.querySelector('.mode-option.active')?.dataset.mode`)) === 'dark');
+
+  await evaluate(`document.querySelector('.mode-option[data-mode="light"]').click()`);
+  await sleep(450);
+  check('light mode applied', (await evaluate(`document.documentElement.dataset.mode`)) === 'light');
+  check('background turned light', (await evaluate(
+    `getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()`
+  )) === '#f4f1fa');
+  check('light option marked active', (await evaluate(`document.querySelector('.mode-option.active')?.dataset.mode`)) === 'light');
+  check('mode toast shown', await evaluate(
+    `[...document.querySelectorAll('.toast')].some(t => /Light mode/.test(t.innerText))`
+  ));
+  await screenshot('09-appearance-light');
 
   await evaluate(`location.hash = '#/home'`);
   await sleep(450);
-  await screenshot('10-theme-home');
+  await screenshot('10-light-dashboard');
 
-  const themeReload = events('Page.loadEventFired');
+  const modeReload = events('Page.loadEventFired');
   await S('Page.reload');
-  await themeReload;
+  await modeReload;
   await sleep(600);
-  check('theme survives a reload', (await evaluate(`document.documentElement.dataset.theme`)) === 'blue');
+  check('light mode survives reload', (await evaluate(`document.documentElement.dataset.mode`)) === 'light');
+
+  // visual sweep of the light mode on every screen
+  for (const route of ['log', 'plan', 'projects', 'ideas', 'history']) {
+    await evaluate(`location.hash = '#/${route}'`);
+    await sleep(400);
+    await screenshot('11-light-' + route);
+  }
+
+  await evaluate(`location.hash = '#/home'`);
+  await sleep(400);
+  await evaluate(`document.querySelector('.fab').click()`);
+  await sleep(500);
+  await screenshot('12-light-composer');
+  await evaluate(`document.querySelector('[data-action="close-sheet"]').click()`);
+  await sleep(400);
 
   await evaluate(`location.hash = '#/more'`);
   await sleep(400);
-  await evaluate(`document.querySelector('.theme-swatch[data-theme="purple"]').click()`);
-  await sleep(300);
-  check('switched back to purple', (await evaluate(`document.documentElement.dataset.theme`)) === 'purple');
-
-  // visual sweep of every remaining theme
-  const sweep = ['green', 'orange', 'pink', 'teal'];
-  for (const theme of sweep) {
-    const applied = await evaluate(
-      `(() => { document.querySelector('.theme-swatch[data-theme="${theme}"]').click(); return document.documentElement.dataset.theme; })()`
-    );
-    check(theme + ' theme applies', applied === theme, applied);
-    await evaluate(`location.hash = '#/home'`);
-    await sleep(400);
-    await screenshot('11-theme-' + theme);
-    await evaluate(`location.hash = '#/more'`);
-    await sleep(350);
-  }
-  await evaluate(`document.querySelector('.theme-swatch[data-theme="purple"]').click()`);
-  await sleep(250);
+  await evaluate(`document.querySelector('.mode-option[data-mode="dark"]').click()`);
+  await sleep(400);
+  check('back to dark mode', (await evaluate(`document.documentElement.dataset.mode`)) === 'dark');
 
   /* --------------------------------------------------------- work log */
   console.log('\n[12] Daily work log');

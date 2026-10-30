@@ -17,15 +17,15 @@ usable on a phone.
 - Quick-add sheet: **Project chips first**, then the day (Today / Tomorrow / any
   date), then the entry — as a Work log or a Task.
 - Task completion toggle, record detail sheet with guarded delete.
-- **Six colour themes** (Purple, Blue, Green, Orange, Pink, Teal) picked from
-  More → Theme colour; applied before first paint, saved per device.
+- **Light + dark mode** with the purple accent, picked from More → Appearance;
+  applied before first paint, saved per device automatically.
 - Data layer: versioned localStorage store, default projects (CookieJet, CNC
   Machine, CA_Controller, General), backup export/import, defensive loading.
-- Installable PWA shell, offline cache, 26 data tests + 134 browser checks.
+- Installable PWA shell, offline cache, 26 data tests + 132 browser checks.
 
 **Verified**
-- 26/26 data-layer tests, 134/134 browser checks, no console errors.
-- Layout checked at 375×667, 430×932 and 1280×900; all six themes checked.
+- 26/26 data-layer tests, 132/132 browser checks, no console errors.
+- Layout checked at 375×667, 430×932 and 1280×900; light and dark modes checked.
 
 **Deliberately not included yet**
 - Calendar view, project screens, reports.
@@ -50,7 +50,7 @@ usable on a phone.
 - Day empty state, search empty state, and "record saved" counts.
 
 **Verified**
-- 26/26 data tests, 134/134 browser checks, no console errors.
+- 26/26 data tests, 132/132 browser checks, no console errors.
 - Covered: add with photo → thumbnail, compression to JPEG, edit keeps photo,
   search across days, lightbox open/close, empty day, photo survives reload,
   quota rollback (data test).

@@ -46,7 +46,9 @@
     archive: '<rect x="3" y="4" width="18" height="4" rx="1.5"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/><path d="M10 12h4"/>',
     download: '<path d="M12 4v10"/><path d="m8 10.5 4 4 4-4"/><path d="M5 19h14"/>',
     upload: '<path d="M12 15V5"/><path d="m8 8.5 4-4 4 4"/><path d="M5 19h14"/>',
-    dots: '<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>'
+    dots: '<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
+    moon: '<path d="M20 14.4A8.4 8.4 0 0 1 9.6 4 8.5 8.5 0 1 0 20 14.4Z"/>',
+    sun: '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/>'
   };
 
   function icon(name, size) {
@@ -112,33 +114,22 @@
 
   var PRIORITY_LABEL = { low: 'Low', medium: 'Medium', high: 'High' };
 
-  /* -------------------------------------------------------------- themes */
-  var THEME_KEY = 'mwt.theme';
-  var THEMES = [
-    { id: 'purple', name: 'Purple', color: '#8b5cf6' },
-    { id: 'blue', name: 'Blue', color: '#3b82f6' },
-    { id: 'green', name: 'Green', color: '#10b981' },
-    { id: 'orange', name: 'Orange', color: '#f97316' },
-    { id: 'pink', name: 'Pink', color: '#ec4899' },
-    { id: 'teal', name: 'Teal', color: '#06b6d4' }
-  ];
+  /* ---------------------------------------------------- light / dark mode */
+  var MODE_KEY = 'mwt.mode';
 
-  function currentTheme() {
+  function currentMode() {
     var saved = '';
-    try { saved = localStorage.getItem(THEME_KEY) || ''; } catch (e) { saved = ''; }
-    return THEMES.some(function (t) { return t.id === saved; }) ? saved : 'purple';
+    try { saved = localStorage.getItem(MODE_KEY) || ''; } catch (e) { saved = ''; }
+    return saved === 'light' ? 'light' : 'dark';
   }
 
-  function applyTheme(id) {
-    var valid = THEMES.some(function (t) { return t.id === id; }) ? id : 'purple';
-    document.documentElement.setAttribute('data-theme', valid);
-    try { localStorage.setItem(THEME_KEY, valid); } catch (e) { /* storage unavailable */ }
+  function applyMode(mode) {
+    var valid = mode === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-mode', valid);
+    try { localStorage.setItem(MODE_KEY, valid); } catch (e) { /* storage unavailable */ }
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', valid === 'light' ? '#f4f1fa' : '#0a0812');
     return valid;
-  }
-
-  function themeName(id) {
-    for (var i = 0; i < THEMES.length; i += 1) if (THEMES[i].id === id) return THEMES[i].name;
-    return 'Purple';
   }
 
   /* ------------------------------------------------------------- router */
@@ -598,30 +589,35 @@
         moreRow('chart', 'History & Reports', 'Daily, weekly and monthly progress', '#/history') +
       '</div>' +
       remindersSection() +
-      themeSection() +
+      appearanceSection() +
       '<p class="ph-note" style="text-align:center;margin-top:22px">MyWork Tracker · all data stays on this device.</p>'
     );
   }
 
-  function themeSection() {
-    var active = currentTheme();
+  function appearanceSection() {
+    var mode = currentMode();
+    var options = [
+      { id: 'dark', name: 'Dark', note: 'Purple on near-black', iconName: 'moon' },
+      { id: 'light', name: 'Light', note: 'Purple on white', iconName: 'sun' }
+    ];
     return (
       '<section class="section" style="margin-top:26px">' +
-        '<div class="section-head"><h2>Theme colour</h2></div>' +
-        '<div class="theme-row" role="radiogroup" aria-label="Theme colour">' +
-          THEMES.map(function (theme) {
-            var on = theme.id === active;
+        '<div class="section-head"><h2>Appearance</h2></div>' +
+        '<div class="mode-row" role="radiogroup" aria-label="Appearance">' +
+          options.map(function (option) {
+            var on = option.id === mode;
             return (
-              '<button type="button" class="theme-swatch' + (on ? ' active' : '') + '"' +
+              '<button type="button" class="mode-option' + (on ? ' active' : '') + '"' +
                 ' role="radio" aria-checked="' + (on ? 'true' : 'false') + '"' +
-                ' data-action="set-theme" data-theme="' + theme.id + '"' +
-                ' style="--sw:' + theme.color + '" title="' + theme.name + '">' +
-                '<span class="sw"></span>' +
-                '<span class="sw-name">' + theme.name + '</span>' +
+                ' data-action="set-mode" data-mode="' + option.id + '">' +
+                '<span class="mode-ico">' + icon(option.iconName, 18) + '</span>' +
+                '<span class="mode-name">' + option.name + '</span>' +
+                '<span class="mode-note">' + option.note + '</span>' +
               '</button>'
             );
           }).join('') +
         '</div>' +
+        '<p class="hint" style="margin:10px 2px 0">Saved automatically on this device.</p>' +
       '</section>'
     );
   }
@@ -1997,14 +1993,14 @@
         break;
       }
 
-      case 'set-theme': {
-        var chosen = applyTheme(el.dataset.theme);
-        document.querySelectorAll('.theme-swatch').forEach(function (swatch) {
-          var on = swatch.dataset.theme === chosen;
-          swatch.classList.toggle('active', on);
-          swatch.setAttribute('aria-checked', on ? 'true' : 'false');
+      case 'set-mode': {
+        var chosenMode = applyMode(el.dataset.mode);
+        document.querySelectorAll('.mode-option').forEach(function (option) {
+          var on = option.dataset.mode === chosenMode;
+          option.classList.toggle('active', on);
+          option.setAttribute('aria-checked', on ? 'true' : 'false');
         });
-        toast(themeName(chosen) + ' theme');
+        toast(chosenMode === 'light' ? 'Light mode saved' : 'Dark mode saved');
         break;
       }
 
@@ -2201,7 +2197,7 @@
     });
   }
 
-  applyTheme(currentTheme());
+  applyMode(currentMode());
   render();
   checkReminders();
   setInterval(checkReminders, 30000);

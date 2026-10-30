@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0a0812" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="color-scheme" content="dark light" />
   <meta name="description" content="MyWork Tracker — a personal app to log daily work, plan future tasks and keep your work history." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -16,13 +16,16 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="css/styles.css" />
 
-  <!-- apply the saved theme before first paint, so there is no colour flash -->
+  <!-- apply the saved light/dark mode before first paint, no colour flash -->
   <script>
     (function () {
       try {
-        var t = localStorage.getItem('mwt.theme');
-        if (t) document.documentElement.setAttribute('data-theme', t);
-      } catch (e) { /* storage unavailable - default theme stays */ }
+        var saved = localStorage.getItem('mwt.mode');
+        var mode = saved === 'light' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-mode', mode);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', mode === 'light' ? '#f4f1fa' : '#0a0812');
+      } catch (e) { /* storage unavailable - dark stays */ }
     })();
   </script>
 </head>
