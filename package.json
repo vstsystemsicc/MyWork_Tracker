@@ -1,0 +1,14 @@
+﻿{
+    "name":  "mywork-tracker",
+    "version":  "1.0.0",
+    "private":  true,
+    "description":  "Personal, mobile-first app to log daily work and plan future tasks",
+    "scripts":  {
+                    "start":  "python -m http.server 5599 --bind 127.0.0.1",
+                    "build":  "node tools/build-dist.mjs",
+                    "test":  "node --test tests/store.test.js",
+                    "test:ui":  "node tools/ui-smoke.mjs",
+                    "publish":  "node tools/sync-pages.mjs",
+                    "deploy":  "powershell -NoProfile -ExecutionPolicy Bypass -File deploy.ps1"
+                }
+}
