@@ -60,42 +60,34 @@ The `_headers` file keeps `sw.js` from being cached stale.
 
 ---
 
-## Option B — GitHub Pages (free, permanent, versioned) — preconfigured
+## Option B — GitHub Pages (free, permanent, versioned)
 
-`site/` is already a git repository with the first commit on `main`, so only the
-remote and the push are missing.
+This project is already pushed to
+`https://github.com/vstsystemsicc/MyWork_Tracker` on `main`. The site is served
+from the **repository root** — `index.html` is at the top level, with `css/`,
+`js/`, `icons/`, `manifest.webmanifest`, `sw.js` and `.nojekyll` beside it.
 
-1. **Create an empty repository** on GitHub: <https://github.com/new> →
-   name `mywork-tracker` → **Public** → **do not** add a README, .gitignore or
-   licence → **Create repository**.
-2. In the project folder run (replace `<your-user>`):
+**One-time setup (only once):**
 
-   ```powershell
-   cd "C:\Users\SOFTWARES\Documents\MyWork Tracker"
-   .\deploy.ps1 -Remote https://github.com/<your-user>/mywork-tracker.git
-   ```
+1. Open <https://github.com/vstsystemsicc/MyWork_Tracker/settings/pages>.
+2. **Build and deployment → Source: Deploy from a branch.**
+3. Branch **main**, folder **/ (root)** → **Save**.
+4. Wait 1–2 minutes: `https://vstsystemsicc.github.io/MyWork_Tracker/`.
 
-   The first push opens a GitHub sign-in window (Git Credential Manager) — sign
-   in once, no token to paste. Windows remembers it for later pushes.
-3. In the repo: **Settings → Pages → Build and deployment** — Source
-   **Deploy from a branch**, Branch **main**, folder **/ (root)** → **Save**.
-4. After ~1 minute the app is at
-   `https://<your-user>.github.io/mywork-tracker/`.
-5. Open it on the phone → **Add to Home screen**.
-
-**Later updates** — one command (the remote is remembered):
+**Publishing an update:**
 
 ```powershell
-.\deploy.ps1
+cd "C:\Users\SOFTWARES\Documents\MyWork_Tracker"
+git add -A
+git commit -m "Update MyWork Tracker"
+git push
 ```
 
-That rebuilds `dist/`, copies it into `site/`, commits and pushes. GitHub Pages
-redeploys on its own; pull-to-refresh on the phone picks it up.
+GitHub Pages redeploys automatically. On the phone, pull to refresh — the
+service worker is network-first, so the new version loads on the next visit.
 
-**Prefer the web uploader (no git at all):** create the repo, choose
-**uploading an existing file**, and drag the **contents of `site/`** (not the
-folder) — `index.html`, `css`, `js`, `icons`, `manifest.webmanifest`, `sw.js`,
-`.nojekyll` — then commit, and do step 3 above.
+`dist/` and `site/` are generated copies (`npm run build`) and are ignored by
+git; only the source at the root is published.
 
 GitHub Pages free limits: 1 GB site size, ~100 GB/month bandwidth, public repos.
 The published folder is `site/`; `dist/` is a build artifact and the rest of the
